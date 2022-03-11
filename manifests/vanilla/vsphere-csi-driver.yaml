@@ -167,6 +167,11 @@ metadata:
   namespace: vmware-system-csi
   labels:
     app: vsphere-csi-controller
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/scheme: 'http'
+    prometheus.io/port: '2112'
+    prometheus.io/port: '2113'
 spec:
   ports:
     - name: ctlr
@@ -200,6 +205,11 @@ spec:
       labels:
         app: vsphere-csi-controller
         role: vsphere-csi
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/scheme: 'http'
+        prometheus.io/port: '2112'
+        prometheus.io/port: '2113'
     spec:
       affinity:
         podAntiAffinity:
