@@ -56,20 +56,20 @@ rules:
   - apiGroups: ["cns.vmware.com"]
     resources: ["cnsvolumeoperationrequests"]
     verbs: ["create", "get", "list", "update", "delete"]
-  - apiGroups: [ "snapshot.storage.k8s.io" ]
-    resources: [ "volumesnapshots" ]
-    verbs: [ "get", "list" ]
-  - apiGroups: [ "snapshot.storage.k8s.io" ]
-    resources: [ "volumesnapshotclasses" ]
-    verbs: [ "watch", "get", "list" ]
-  - apiGroups: [ "snapshot.storage.k8s.io" ]
-    resources: [ "volumesnapshotcontents" ]
-    verbs: [ "create", "get", "list", "watch", "update", "delete", "patch"]
-  - apiGroups: [ "snapshot.storage.k8s.io" ]
-    resources: [ "volumesnapshotcontents/status" ]
-    verbs: [ "update", "patch" ]
-  - apiGroups: [ "cns.vmware.com" ]
-    resources: [ "csinodetopologies" ]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotclasses"]
+    verbs: ["watch", "get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents/status"]
+    verbs: ["update", "patch"]
+  - apiGroups: ["cns.vmware.com"]
+    resources: ["csinodetopologies"]
     verbs: ["get", "update", "watch", "list"]
 ---
 kind: ClusterRoleBinding
@@ -168,16 +168,31 @@ metadata:
   labels:
     app: vsphere-csi-controller
   annotations:
-    prometheus.io/scrape: 'true'
-    prometheus.io/scheme: 'http'
-    prometheus.io/port: '2112'
-    prometheus.io/port: '2113'
+    prometheus.io/scrape: "true"
+    prometheus.io/scheme: "http"
+    prometheus.io/port: "2112"
 spec:
   ports:
     - name: ctlr
       port: 2112
       targetPort: 2112
       protocol: TCP
+  selector:
+    app: vsphere-csi-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vsphere-syncer
+  namespace: vmware-system-csi
+  labels:
+    app: vsphere-csi-controller
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/scheme: "http"
+    prometheus.io/port: "2113"
+spec:
+  ports:
     - name: syncer
       port: 2113
       targetPort: 2113
@@ -438,9 +453,9 @@ spec:
           livenessProbe:
             exec:
               command:
-              - /csi-node-driver-registrar
-              - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.vsphere.vmware.com/csi.sock
-              - --mode=kubelet-registration-probe
+                - /csi-node-driver-registrar
+                - --kubelet-registration-path=/var/lib/kubelet/plugins/csi.vsphere.vmware.com/csi.sock
+                - --mode=kubelet-registration-probe
             initialDelaySeconds: 3
         - name: vsphere-csi-node
           image: gcr.io/cloud-provider-vsphere/csi/ci/driver:latest
@@ -585,9 +600,9 @@ spec:
             livenessProbe:
             exec:
               command:
-              - /csi-node-driver-registrar.exe
-              - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\csi.vsphere.vmware.com\\csi.sock
-              - --mode=kubelet-registration-probe
+                - /csi-node-driver-registrar.exe
+                - --kubelet-registration-path=C:\\var\\lib\\kubelet\\plugins\\csi.vsphere.vmware.com\\csi.sock
+                - --mode=kubelet-registration-probe
             initialDelaySeconds: 3
         - name: vsphere-csi-node
           image: gcr.io/cloud-provider-vsphere/csi/ci/driver:latest
@@ -600,7 +615,7 @@ spec:
               valueFrom:
                 fieldRef:
                   apiVersion: v1
-                  fieldPath: spec.nodeName          
+                  fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: 'unix://C:\\csi\\csi.sock'
             - name: MAX_VOLUMES_PER_NODE
@@ -608,7 +623,7 @@ spec:
             - name: X_CSI_MODE
               value: node
             - name: X_CSI_SPEC_REQ_VALIDATION
-              value: 'false'
+              value: "false"
             - name: X_CSI_SPEC_DISABLE_LEN_CHECK
               value: "true"
             - name: LOGGER_LEVEL
@@ -625,13 +640,13 @@ spec:
             - name: plugin-dir
               mountPath: 'C:\csi'
             - name: pods-mount-dir
-              mountPath: 'C:\var\lib\kubelet'   
+              mountPath: 'C:\var\lib\kubelet'
             - name: csi-proxy-volume-v1
               mountPath: \\.\pipe\csi-proxy-volume-v1
             - name: csi-proxy-filesystem-v1
               mountPath: \\.\pipe\csi-proxy-filesystem-v1
             - name: csi-proxy-disk-v1
-              mountPath: \\.\pipe\csi-proxy-disk-v1    
+              mountPath: \\.\pipe\csi-proxy-disk-v1
             - name: csi-proxy-system-v1alpha1
               mountPath: \\.\pipe\csi-proxy-system-v1alpha1
           ports:
@@ -670,19 +685,19 @@ spec:
         - name: csi-proxy-disk-v1
           hostPath:
             path: \\.\pipe\csi-proxy-disk-v1
-            type: ''
+            type: ""
         - name: csi-proxy-volume-v1
           hostPath:
             path: \\.\pipe\csi-proxy-volume-v1
-            type: ''
+            type: ""
         - name: csi-proxy-filesystem-v1
           hostPath:
             path: \\.\pipe\csi-proxy-filesystem-v1
-            type: ''
+            type: ""
         - name: csi-proxy-system-v1alpha1
           hostPath:
             path: \\.\pipe\csi-proxy-system-v1alpha1
-            type: ''
+            type: ""
       tolerations:
         - effect: NoExecute
           operator: Exists
